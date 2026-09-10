@@ -43,9 +43,13 @@ async def collect_job(rt: Runtime, job: dict[str, Any], force: bool = False) -> 
             continue
         fetched_any = True
         for line_no, raw, obj in lines:
-            writer.append({"observation_id": obs, "batch_id": job.get("batch_id"), "file_id": fid, "kind": kind,
-                           "line_no": line_no, "fetched_at": iso_now(), "recollect": bool(force), "record": obj})
-            if isinstance(obj, dict) and obj.get("__malformed__"):
+            malformed = isinstance(obj, dict) and obj.get("__malformed__")
+            rec: dict[str, Any] = {"observation_id": obs, "batch_id": job.get("batch_id"), "file_id": fid, "kind": kind,
+                                   "line_no": line_no, "fetched_at": iso_now(), "recollect": bool(force), "record": obj}
+            if malformed:
+                rec["raw"] = raw  # keep the exact bytes of an unparseable line
+            writer.append(rec)
+            if malformed:
                 result.setdefault("parse_error", f"{kind} line {line_no} malformed JSON: {obj.get('error')}")
                 continue
             parsed = parse_output_record(obj, raw)

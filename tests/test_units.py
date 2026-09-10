@@ -296,15 +296,33 @@ def test_unique_observation_identifiers_replacement_planning(workdir):
         assert rep["observation_id"] == obs + "-a2" and rep["attempt_id"] == 2 and rep["phase"] == "replacement"
         assert rep["parent_observation_id"] == obs and rep["requested_output_tokens"] == 100
         assert rep["observation_id"] not in {r["observation_id"] for r in rows}
-        # a failed replacement leads to -a3, still rooted at the original id
+        # a live (pending/created) replacement suppresses further planning for that root
         store.insert_jobs(plan, "exp")
+        assert plan_replacements(SimpleNamespace(store=store)) == []
+        # a failed replacement leads to -a3, still rooted at the original id and colliding with nothing
         store.conn.execute("UPDATE jobs SET creation_state='error' WHERE observation_id=?", (rep["observation_id"],))
         plan2 = plan_replacements(SimpleNamespace(store=store))
-        assert [p["observation_id"] for p in plan2] == [obs + "-a3"]
-        assert plan2[0]["attempt_id"] == 3 and plan2[0]["parent_observation_id"] == obs
-        # a live replacement suppresses further planning
+        assert {p["observation_id"] for p in plan2} == {obs + "-a3"}
+        assert all(p["attempt_id"] == 3 and p["parent_observation_id"] == obs for p in plan2)
+        assert obs + "-a3" not in {j["observation_id"] for j in store.list_jobs()}
         store.insert_jobs(plan2, "exp")
+        assert store.get_job(obs + "-a3")["attempt_id"] == 3
         assert plan_replacements(SimpleNamespace(store=store)) == []
+        assert len({j["observation_id"] for j in store.list_jobs()}) == len(store.list_jobs()) == 6
+    finally:
+        store.close()
+
+
+def test_unique_observation_identifiers_replacement_plan_has_no_duplicate_rows(workdir):
+    store = Store(str(workdir / "data" / "state.sqlite"))
+    try:
+        obs = "prod-t00100-k0001"
+        store.insert_jobs(build_manifest([16, 100], 2, 1), "exp")
+        store.conn.execute("UPDATE jobs SET creation_state='error' WHERE observation_id=?", (obs,))
+        store.insert_jobs(plan_replacements(SimpleNamespace(store=store)), "exp")
+        store.conn.execute("UPDATE jobs SET creation_state='error' WHERE observation_id=?", (obs + "-a2",))
+        plan2 = plan_replacements(SimpleNamespace(store=store))
+        assert [p["observation_id"] for p in plan2] == [obs + "-a3"]
     finally:
         store.close()
 

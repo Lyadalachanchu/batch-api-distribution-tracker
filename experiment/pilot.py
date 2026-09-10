@@ -16,7 +16,7 @@ from .launch import recent_creation_epochs
 from .limits import seconds_until_allowed, CreationLimitExceeded
 from .manifest import observation_id as make_obs_id
 from .monitor import monitor
-from .redact import contains_secret
+from .redact import contains_secret, redact_obj, redact_text
 from .runtime import Runtime
 from .timeutil import iso_now, epoch_now
 from .wave import run_wave
@@ -45,9 +45,16 @@ def scan_for_secrets(paths: list[str]) -> list[str]:
     return hits
 
 
-def pilot_job_rows(cfg: ExperimentConfig, shared_files: dict[int, str]) -> list[list[dict[str, Any]]]:
-    """Two waves: [one 10-token job], then [one job per pilot level + one extra smallest-production-level job]."""
+def pilot_round_of(observation_id: str) -> int:
+    m = re.search(r"-k(\d+)", observation_id)
+    return int(m.group(1)) // 10 if m else 0
+
+
+def pilot_job_rows(cfg: ExperimentConfig, shared_files: dict[int, str], round_no: int = 0) -> list[list[dict[str, Any]]]:
+    """Two waves: [one 10-token job], then [one job per pilot level + one extra smallest-production-level job].
+    `round_no` offsets the ids so `pilot --again` creates a genuinely new set."""
     def row(tokens: int, k: int) -> dict[str, Any]:
+        k = k + 10 * round_no
         return {"observation_id": make_obs_id("pilot", tokens, k), "phase": "pilot", "attempt_id": 1,
                 "requested_output_tokens": tokens, "api_max_output_tokens": tokens,
                 "custom_id": shared_custom_id(cfg, tokens), "input_file_id": shared_files.get(tokens), "launch_position": None}
@@ -95,10 +102,10 @@ def evaluate_pilot(rt: Runtime) -> dict[str, Any]:
     add("no_secrets_in_artifacts", not hits, {"files_with_secrets": hits})
     add("resume_and_cost_limit_behaviour", True, "covered by tests/test_resume.py, tests/test_cost.py, tests/test_limits.py and by the launch dry-run gate")
     passed = all(c["ok"] for n, c in checks.items() if n != "infeasible_levels_documented") and checks["infeasible_levels_documented"]["ok"]
-    return {"passed": passed, "checks": checks, "jobs": [{k: j.get(k) for k in (
+    return redact_obj({"passed": passed, "checks": checks, "jobs": [{k: j.get(k) for k in (
         "observation_id", "requested_output_tokens", "batch_id", "input_file_id", "status", "created_at", "in_progress_at",
         "finalizing_at", "completed_at", "output_tokens", "reasoning_tokens", "input_tokens", "response_status", "incomplete_reason",
-        "result_http_status", "result_error_code", "result_error_message", "local_create_started_at", "local_create_finished_at")} for j in jobs]}
+        "result_http_status", "result_error_code", "result_error_message", "local_create_started_at", "local_create_finished_at")} for j in jobs]})
 
 
 def write_pilot_report(cfg: ExperimentConfig, ev: dict[str, Any], waves: list[dict[str, Any]], path: str) -> None:
@@ -123,7 +130,7 @@ def write_pilot_report(cfg: ExperimentConfig, ev: dict[str, Any], waves: list[di
               "- Levels below the API minimum (16) are submitted on purpose to document the constraint; their per-request HTTP 400 is expected.",
               "- Server timestamps are integer seconds; local timestamps are microsecond ISO-8601 UTC.", ""]
     with open(path, "w", encoding="utf-8") as f:
-        f.write("\n".join(lines))
+        f.write(redact_text("\n".join(lines)))
 
 
 async def pilot(args: Any, api=None) -> dict[str, Any]:
@@ -137,7 +144,10 @@ async def pilot(args: Any, api=None) -> dict[str, Any]:
         if missing:
             raise RuntimeError(f"no uploaded input file for levels {missing}; run `python -m experiment prepare` first")
         existing = rt.store.list_jobs(phases=["pilot"])
-        waves_rows = pilot_job_rows(cfg, shared)
+        round_no = 0
+        if existing and getattr(args, "again", False):
+            round_no = 1 + max(pilot_round_of(j["observation_id"]) for j in existing)
+        waves_rows = pilot_job_rows(cfg, shared, round_no)
         if existing and not getattr(args, "again", False):
             # idempotent: re-running resumes monitoring/collection instead of creating new pilot batches
             log.info("pilot jobs already exist (%d); resuming monitor/collect, not creating new batches", len(existing))
@@ -175,10 +185,19 @@ async def pilot(args: Any, api=None) -> dict[str, Any]:
         rt.store.set_meta("pilot_status", "passed" if ev["passed"] else "failed")
         rt.store.set_meta("pilot_evaluated_at", iso_now())
         report_path = getattr(args, "report", None) or os.path.join("reports", "pilot_report.md")
-        write_pilot_report(cfg, ev, waves_stats, report_path)
+        summary_path = os.path.join(cfg.processed_dir, "pilot_summary.json")
         os.makedirs(cfg.processed_dir, exist_ok=True)
-        with open(os.path.join(cfg.processed_dir, "pilot_summary.json"), "w", encoding="utf-8") as f:
-            json.dump({"evaluation": ev, "waves": waves_stats}, f, indent=2, default=str)
+        for _ in range(2):
+            write_pilot_report(cfg, ev, waves_stats, report_path)
+            with open(summary_path, "w", encoding="utf-8") as f:
+                json.dump(redact_obj({"evaluation": ev, "waves": waves_stats}), f, indent=2, default=str)
+            # final scan AFTER every artifact has been written; if anything leaked, the pilot fails
+            hits = scan_for_secrets([cfg.data_dir, os.path.dirname(cfg.config_path) or "config", os.path.dirname(report_path) or "reports"])
+            ev["checks"]["no_secrets_in_artifacts"] = {"ok": not hits, "detail": {"files_with_secrets": hits}}
+            ev["passed"] = bool(ev["passed"] and not hits)
+            if not hits:
+                break
+        rt.store.set_meta("pilot_status", "passed" if ev["passed"] else "failed")
         log.info("pilot %s; report at %s", "PASSED" if ev["passed"] else "FAILED", report_path)
         return ev
     finally:

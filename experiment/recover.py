@@ -27,13 +27,17 @@ def plan_replacements(rt: Runtime) -> list[dict[str, Any]]:
         if j.get("parent_observation_id"):
             children.setdefault(j["parent_observation_id"], []).append(j)
     rows: list[dict[str, Any]] = []
+    planned_roots: set[str] = set()
     for j in jobs:
         if j["creation_state"] != "error" or j.get("batch_id"):
             continue
         root = j.get("parent_observation_id") or j["observation_id"]
+        if root in planned_roots:
+            continue
         live = [c for c in children.get(root, []) if c["creation_state"] in ("pending", "in_flight", "created", "unknown")]
         if live:
             continue
+        planned_roots.add(root)
         attempt = 1 + len(children.get(root, [])) + 1
         rows.append({
             "observation_id": make_obs_id("prod", j["requested_output_tokens"], int(root.split("-k")[-1].split("-")[0]), attempt),

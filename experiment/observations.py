@@ -10,6 +10,7 @@ import pandas as pd
 
 from .config import ExperimentConfig
 from .cost import actual_cost_usd
+from .redact import redact_obj
 from .store import Store
 from .timeutil import epoch_to_iso, iso_to_epoch
 
@@ -119,7 +120,7 @@ def build_observations(store: Store, cfg: ExperimentConfig) -> pd.DataFrame:
             dur_ms = round((iso_to_epoch(lcf) - iso_to_epoch(lcs)) * 1000.0, 3)
         valid = bool(j.get("status") == "completed" and resp_status in ("completed", "incomplete") and out_tokens is not None
                      and not j.get("parse_error"))
-        rows.append({
+        rows.append(redact_obj({
             "experiment_id": j["experiment_id"],
             "observation_id": j["observation_id"],
             "attempt_id": j["attempt_id"],
@@ -167,7 +168,7 @@ def build_observations(store: Store, cfg: ExperimentConfig) -> pd.DataFrame:
             "parse_error": j.get("parse_error"),
             "estimated_cost_usd": actual_cost_usd(j.get("input_tokens"), j.get("cached_input_tokens"), out_tokens, cfg.pricing),
             "valid_observation": valid,
-        })
+        }))
     df = pd.DataFrame(rows, columns=OBSERVATION_COLUMNS)
     return df
 

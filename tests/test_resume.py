@@ -14,6 +14,7 @@ import pytest
 from experiment.api import ApiResult
 from experiment.collect import collect_all
 from experiment.config import ORIGINAL_REQUESTED_LEVELS, ExperimentConfig
+from experiment.events import read_jsonl
 from experiment.launch import launch
 from experiment.monitor import monitor
 from experiment.observations import build_observations
@@ -164,14 +165,20 @@ async def test_idempotent_resume_pilot_without_again_creates_no_new_pilot_batche
     with _store(args) as store:
         assert store.get_meta("pilot_status") == "passed"
         assert all(len(store.attempts_for(j["observation_id"])) == 1 for j in pilot_jobs)
-    # the dry run never creates anything either
+    # with pilot jobs on record even a run without --execute only resumes monitor/collect/evaluate; nothing is created
+    ev3 = await pilot(make_args(config=args.config, execute=False, max_cost_usd=0.10, interval=0.01), api=fake_api)
+    assert ev3["passed"] and fake_api.create_calls == n_calls and set(fake_api.batches) == batches
+
+
+async def test_idempotent_resume_pilot_dry_run_on_a_fresh_store_creates_nothing(workdir, fake_api):
+    args, _ = await _prepare(workdir, fake_api)
     plan = await pilot(make_args(config=args.config, execute=False, max_cost_usd=0.10, interval=0.01), api=fake_api)
-    assert plan.get("execute") is False and fake_api.create_calls == n_calls
+    assert plan["execute"] is False and len(plan["jobs"]) == 1 + len(ExperimentConfig.load(args.config).pilot_levels) + 1
+    assert fake_api.create_calls == 0 and _jobs(args, ["pilot"]) == []
+    with _store(args) as store:
+        assert store.get_meta("pilot_status") is None
 
 
-@pytest.mark.xfail(strict=True, reason="BUG: pilot --again never creates new batches: pilot_job_rows() always yields the same "
-                                       "fixed observation ids (k=0,1,2), insert_jobs is INSERT OR IGNORE and only "
-                                       "creation_state='pending' rows are submitted, so a second pilot round is silently empty")
 async def test_pilot_again_creates_a_fresh_set_of_pilot_batches(workdir, fake_api):
     args, _ = await _prepare(workdir, fake_api)
     ev1 = await pilot(_pilot_args(args), api=fake_api)
@@ -210,7 +217,7 @@ async def test_retry_accounting_failed_creation_is_recorded_once_and_not_retried
         assert len(store.all_attempts()) == 4
         assert all(len(store.attempts_for(j["observation_id"])) == 1 for j in store.list_jobs(phases=["prod"]))
         assert Counter(j["creation_state"] for j in store.list_jobs(phases=["prod"])) == {"created": 3, "error": 1}
-    events = [json.loads(l) for l in open(cfg.raw_path("batch_creation_events.jsonl"))]
+    events = list(read_jsonl(cfg.raw_path("batch_creation_events.jsonl")))
     mine = [e for e in events if e["observation_id"] == obs]
     assert len(mine) == 1 and mine[0]["ok"] is False and mine[0]["outcome"] == "error" and mine[0]["attempt_no"] == 1
     assert mine[0]["http_status"] == 500 and mine[0]["wave"] == "launch"
@@ -263,7 +270,7 @@ async def test_retry_accounting_failed_replacement_gets_attempt_id_3(workdir):
     p1 = await recover(make_args(config=args.config, execute=True), api=api)
     assert p1["wave"]["errors"] == 1 and p1["wave"]["created"] == 0
     p2 = await recover(make_args(config=args.config, execute=True), api=api)
-    assert p2["new_replacements"] == 1 and p2["wave"]["created"] == 1
+    assert p2["pending_total"] == 1 and p2["wave"]["planned"] == 1 and p2["wave"]["created"] == 1
     assert api.create_calls == 6  # 4 wave + a2 (failed) + a3 (created)
     with _store(args) as store:
         a2, a3 = store.get_job(obs + "-a2"), store.get_job(obs + "-a3")
@@ -282,6 +289,17 @@ async def test_retry_accounting_failed_replacement_gets_attempt_id_3(workdir):
         assert df.loc[obs]["status"] == "creation_error" and df.loc[obs + "-a2"]["status"] == "creation_error"
     finally:
         await rt.aclose()
+
+
+async def test_retry_accounting_second_recover_reports_one_new_replacement(workdir):
+    obs = "prod-t00016-k0000"
+    api = FakeBatchApi(auto_advance=15.0, fail_create_for={obs, obs + "-a2"})
+    args, _ = await _prepare(workdir, api)
+    await launch(_launch_args(args), api=api)
+    await recover(make_args(config=args.config, execute=True), api=api)
+    p2 = await recover(make_args(config=args.config, execute=False), api=api)
+    assert p2["pending_total"] == 1
+    assert p2["new_replacements"] == 1
 
 
 async def test_retry_accounting_timeout_records_unknown_and_reconcile_adopts_the_server_batch(workdir):
@@ -321,7 +339,7 @@ async def test_retry_accounting_timeout_records_unknown_and_reconcile_adopts_the
         assert Counter(j["creation_state"] for j in rt.store.list_jobs(phases=["prod"])) == {"created": 4}
     finally:
         await rt.aclose()
-    events = [json.loads(l) for l in open(cfg.raw_path("batch_creation_events.jsonl"))]
+    events = list(read_jsonl(cfg.raw_path("batch_creation_events.jsonl")))
     adopted = [e for e in events if e.get("kind") == "batch_adopted"]
     assert len(adopted) == 1 and adopted[0]["observation_id"] == obs and adopted[0]["batch_id"] == server_batch["id"]
 

@@ -1,0 +1,19 @@
+# secrets — never commit
+.env
+*.env
+openai.env
+
+# python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+*.egg-info/
+build/
+dist/
+
+# local state that is regenerated (raw JSONL and processed outputs ARE committed)
+data/state.sqlite-journal
+data/state.sqlite-wal
+data/state.sqlite-shm
+data/logs/

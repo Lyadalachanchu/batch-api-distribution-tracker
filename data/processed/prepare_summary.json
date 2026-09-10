@@ -1,0 +1,50 @@
+{
+  "prepared_at": "2026-09-10T07:09:55.638170+00:00",
+  "experiment_id": "batch-turnaround-gpt-5.6-luna-2026-09-10",
+  "model": "gpt-5.6-luna",
+  "levels": [
+    16,
+    100,
+    1000,
+    3000,
+    10000
+  ],
+  "pilot_levels": [
+    1,
+    10,
+    16,
+    100,
+    1000,
+    3000,
+    10000
+  ],
+  "runs_per_group": 400,
+  "total_production_jobs": 2000,
+  "seed": 20260910,
+  "file_mode": "shared",
+  "shared_files": {
+    "1": "file-CZx8ewFNqSEVY4VvSc9muK",
+    "10": "file-569y65tCvNAnHFgp6zPMTY",
+    "16": "file-YLhrenST2sPgqk9wxVBmNx",
+    "100": "file-3hp7s6u7LZ2vUqQDQgaUhk",
+    "1000": "file-URyujANMbdu1xdjE7zk3Zv",
+    "3000": "file-GBThWoKtoCWSdsqY4xy39C",
+    "10000": "file-8EjySxx6hhhcV1nVJuHAbT"
+  },
+  "individual_files_uploaded_now": 0,
+  "jobs_inserted_now": 2000,
+  "jobs_in_db": 2000,
+  "manifest_path": "data/launch_manifest.csv",
+  "cost_projection": {
+    "jobs": 2000,
+    "max_output_tokens": 5646400,
+    "est_input_tokens": 120000,
+    "output_cost_usd": 3.38784,
+    "input_cost_usd": 0.012,
+    "total_cost_usd": 3.39984,
+    "safety_margin": 0.1,
+    "total_with_margin_usd": 3.739824,
+    "ceiling_usd": 4.0
+  },
+  "batch_creations_made": 0
+}

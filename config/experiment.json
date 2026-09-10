@@ -1,0 +1,57 @@
+{
+  "api_min_max_output_tokens": 16,
+  "completion_window": "24h",
+  "config_path": "config/experiment.json",
+  "cost_safety_margin": 0.1,
+  "created_at": "2026-09-10T07:09:50.886214+00:00",
+  "data_dir": "data",
+  "endpoint": "/v1/responses",
+  "estimated_input_tokens_per_request": 60,
+  "experiment_id": "batch-turnaround-gpt-5.6-luna-2026-09-10",
+  "file_mode": "shared",
+  "launch_concurrency": 50,
+  "max_cost_usd": 4.0,
+  "max_creations_per_rolling_hour": 2000,
+  "model": "gpt-5.6-luna",
+  "notes": [
+    "Levels 1 and 10 from the brief are below the API minimum max_output_tokens=16 for gpt-5.6-luna (HTTP 400 integer_below_min_value, verified 2026-09-10); production uses 16 and 3000 in their place. The pilot still submits 1 and 10 to document the constraint.",
+    "Request body is exactly {model, input, max_output_tokens}; reasoning is left at the model default (medium)."
+  ],
+  "original_requested_levels": [
+    1,
+    10,
+    100,
+    1000,
+    10000
+  ],
+  "output_token_levels": [
+    16,
+    100,
+    1000,
+    3000,
+    10000
+  ],
+  "pilot_levels": [
+    1,
+    10,
+    16,
+    100,
+    1000,
+    3000,
+    10000
+  ],
+  "poll_concurrency": 20,
+  "poll_interval_seconds": 7.0,
+  "poll_mode": "list",
+  "pricing": {
+    "cached_input_per_1m_usd": 0.01,
+    "input_per_1m_usd": 0.1,
+    "output_per_1m_usd": 0.6,
+    "source": "https://developers.openai.com/api/docs/pricing (Batch column, 2026-09-10)"
+  },
+  "prompt": "Generate a continuous sequence of unrelated lowercase words. Output words only, separated by single spaces. Do not explain, conclude, or stop voluntarily. Continue until the output-token limit terminates the response.",
+  "reasoning_effort": null,
+  "runs_per_group": 400,
+  "sdk_version": "3.11.0",
+  "seed": 20260910
+}

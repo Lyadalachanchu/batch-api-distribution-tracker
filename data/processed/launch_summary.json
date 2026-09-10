@@ -1,0 +1,121 @@
+{
+  "plan": {
+    "pending": 2000,
+    "concurrency": 50,
+    "cost_projection": {
+      "jobs": 2000,
+      "max_output_tokens": 5646400,
+      "est_input_tokens": 120000,
+      "output_cost_usd": 3.38784,
+      "input_cost_usd": 0.012,
+      "total_cost_usd": 3.406662,
+      "safety_margin": 0.1,
+      "total_with_margin_usd": 3.747328,
+      "ceiling_usd": 4.0
+    },
+    "spent_before": {
+      "actual_usd": 9.8e-05,
+      "committed_worst_case_usd": 0.006724,
+      "total_usd": 0.006822
+    },
+    "recent_creations": {
+      "local": 0,
+      "api": 0
+    },
+    "limit_per_hour": 2000,
+    "levels": {
+      "10000": 400,
+      "100": 400,
+      "1000": 400,
+      "16": 400,
+      "3000": 400
+    },
+    "execute": true,
+    "first_positions": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+    ]
+  },
+  "wave": {
+    "wave": "launch",
+    "planned": 2000,
+    "started_at": "2026-09-10T10:22:59.104808+00:00",
+    "finished_at": "2026-09-10T10:23:22.099331+00:00",
+    "created": 1998,
+    "errors": 2,
+    "unknown": 0,
+    "skipped": 0,
+    "rate_limit_429s": 0,
+    "stopped_early": false,
+    "stop_reason": null,
+    "duration_seconds": 22.995,
+    "per_status": {
+      "200": 1998,
+      "504": 2
+    }
+  },
+  "created_at_balance": {
+    "groups": {
+      "16": {
+        "n": 400,
+        "min": 1789035780.0,
+        "p25": 1789035783.0,
+        "median": 1789035785.0,
+        "p75": 1789035788.0,
+        "max": 1789035791.0,
+        "mean": 1789035785.49
+      },
+      "100": {
+        "n": 400,
+        "min": 1789035780.0,
+        "p25": 1789035783.0,
+        "median": 1789035785.0,
+        "p75": 1789035788.0,
+        "max": 1789035791.0,
+        "mean": 1789035785.425
+      },
+      "1000": {
+        "n": 399,
+        "min": 1789035780.0,
+        "p25": 1789035783.0,
+        "median": 1789035786.0,
+        "p75": 1789035788.0,
+        "max": 1789035791.0,
+        "mean": 1789035785.5614035
+      },
+      "3000": {
+        "n": 400,
+        "min": 1789035780.0,
+        "p25": 1789035783.0,
+        "median": 1789035786.0,
+        "p75": 1789035788.0,
+        "max": 1789035791.0,
+        "mean": 1789035785.755
+      },
+      "10000": {
+        "n": 399,
+        "min": 1789035780.0,
+        "p25": 1789035783.0,
+        "median": 1789035785.0,
+        "p75": 1789035788.0,
+        "max": 1789035791.0,
+        "mean": 1789035785.4887218
+      }
+    },
+    "created_at_min": 1789035780.0,
+    "created_at_max": 1789035791.0,
+    "created_at_span_seconds": 11.0,
+    "max_median_gap_seconds": 1.0,
+    "launch_started_at": "2026-09-10T10:22:59.087389+00:00"
+  },
+  "launch_started_at": "2026-09-10T10:22:59.087389+00:00",
+  "launch_finished_at": "2026-09-10T10:23:22.099368+00:00"
+}

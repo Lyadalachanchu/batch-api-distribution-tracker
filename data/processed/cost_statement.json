@@ -8,13 +8,13 @@
   "by_phase": {
     "prod": {
       "jobs": 2000,
-      "jobs_with_usage": 1020,
-      "input_tokens": 45900,
+      "jobs_with_usage": 1512,
+      "input_tokens": 67995,
       "cached_input_tokens": 0,
-      "output_tokens": 2643465,
-      "reasoning_tokens": 34179,
-      "total_tokens": 2689365,
-      "cost_usd": 1.590669
+      "output_tokens": 3944356,
+      "reasoning_tokens": 50588,
+      "total_tokens": 4012351,
+      "cost_usd": 2.3734131
     },
     "pilot": {
       "jobs": 9,
@@ -33,65 +33,65 @@
       "requested_output_tokens": 16,
       "label": "16 tokens",
       "jobs": 400,
-      "jobs_with_usage": 196,
-      "input_tokens": 8820,
+      "jobs_with_usage": 299,
+      "input_tokens": 13455,
       "cached_input_tokens": 0,
-      "output_tokens": 3136,
-      "reasoning_tokens": 3136,
-      "total_tokens": 11956,
-      "cost_usd": 0.0027636000000000006
+      "output_tokens": 4784,
+      "reasoning_tokens": 4784,
+      "total_tokens": 18239,
+      "cost_usd": 0.0042159
     },
     {
       "phase": "prod",
       "requested_output_tokens": 100,
       "label": "100 tokens",
       "jobs": 400,
-      "jobs_with_usage": 197,
-      "input_tokens": 8865,
+      "jobs_with_usage": 283,
+      "input_tokens": 12690,
       "cached_input_tokens": 0,
-      "output_tokens": 19700,
-      "reasoning_tokens": 7253,
-      "total_tokens": 28565,
-      "cost_usd": 0.012706499999999999
+      "output_tokens": 28200,
+      "reasoning_tokens": 10622,
+      "total_tokens": 40890,
+      "cost_usd": 0.018188999999999997
     },
     {
       "phase": "prod",
       "requested_output_tokens": 1000,
       "label": "1,000 tokens",
       "jobs": 400,
-      "jobs_with_usage": 207,
-      "input_tokens": 9315,
+      "jobs_with_usage": 306,
+      "input_tokens": 13770,
       "cached_input_tokens": 0,
-      "output_tokens": 195497,
-      "reasoning_tokens": 7644,
-      "total_tokens": 204812,
-      "cost_usd": 0.1182297
+      "output_tokens": 291702,
+      "reasoning_tokens": 11439,
+      "total_tokens": 305472,
+      "cost_usd": 0.1763982
     },
     {
       "phase": "prod",
       "requested_output_tokens": 3000,
       "label": "3,000 tokens",
       "jobs": 400,
-      "jobs_with_usage": 213,
-      "input_tokens": 9585,
+      "jobs_with_usage": 314,
+      "input_tokens": 14130,
       "cached_input_tokens": 0,
-      "output_tokens": 596705,
-      "reasoning_tokens": 8249,
-      "total_tokens": 606290,
-      "cost_usd": 0.3589815
+      "output_tokens": 883265,
+      "reasoning_tokens": 11970,
+      "total_tokens": 897395,
+      "cost_usd": 0.5313720000000001
     },
     {
       "phase": "prod",
       "requested_output_tokens": 10000,
       "label": "10,000 tokens",
       "jobs": 400,
-      "jobs_with_usage": 207,
-      "input_tokens": 9315,
+      "jobs_with_usage": 310,
+      "input_tokens": 13950,
       "cached_input_tokens": 0,
-      "output_tokens": 1828427,
-      "reasoning_tokens": 7897,
-      "total_tokens": 1837742,
-      "cost_usd": 1.0979877
+      "output_tokens": 2736405,
+      "reasoning_tokens": 11773,
+      "total_tokens": 2750355,
+      "cost_usd": 1.6432380000000002
     },
     {
       "phase": "pilot",
@@ -185,10 +185,10 @@
       "cost_usd": 0.0060045
     }
   ],
-  "production_usd": 1.590669,
+  "production_usd": 2.3734131,
   "pilot_usd": 0.0067854000000000005,
-  "total_usd": 1.5974544000000002,
-  "total_tokens": 2700899,
+  "total_usd": 2.3801985,
+  "total_tokens": 4023885,
   "projected_max": {
     "jobs": 2000,
     "max_output_tokens": 5646400,
@@ -211,6 +211,6 @@
     "total_with_margin_usd": 3.747328,
     "ceiling_usd": 4.0
   },
-  "production_share_of_projected_max": 0.46786584074544685,
+  "production_share_of_projected_max": 0.6980955280248482,
   "note": "Actual usage priced at the documented Batch rates in the pricing table; the projected maximum assumes every request emits its full max_output_tokens. Failed/expired jobs with no usage record are billed as zero here."
 }

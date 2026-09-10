@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-10T15:38:40.494312+00:00",
+  "generated_at": "2026-09-10T19:14:42.986866+00:00",
   "checks": [
     {
       "name": "submission_order_balance",
@@ -45,50 +45,50 @@
     },
     {
       "name": "failure_rate_by_group",
-      "flagged": false,
-      "detail": "chi-square=2.12, p=0.714; non-completed share by group: 16 tokens: 51.0%, 100 tokens: 50.7%, 1,000 tokens: 48.2%, 3,000 tokens: 46.8%, 10,000 tokens: 48.2% (spread 4.2%)",
+      "flagged": true,
+      "detail": "chi-square=8.04, p=0.0901; non-completed share by group: 16 tokens: 25.2%, 100 tokens: 29.2%, 1,000 tokens: 23.5%, 3,000 tokens: 21.5%, 10,000 tokens: 22.5% (spread 7.7%)",
       "values": {
-        "chi2": 2.1208483393357342,
-        "p": 0.7135431977453304,
+        "chi2": 8.039509064099228,
+        "p": 0.09014160127741035,
         "rate_by_group": {
-          "16 tokens": 0.51,
-          "100 tokens": 0.5075,
-          "1,000 tokens": 0.4825,
-          "3,000 tokens": 0.4675,
-          "10,000 tokens": 0.4825
+          "16 tokens": 0.2525,
+          "100 tokens": 0.2925,
+          "1,000 tokens": 0.235,
+          "3,000 tokens": 0.215,
+          "10,000 tokens": 0.225
         },
-        "spread": 0.04249999999999998
+        "spread": 0.07749999999999999
       }
     },
     {
       "name": "early_stop_rate_by_group",
       "flagged": true,
-      "detail": "chi-square=54.35, p=4.45e-11; early-stop rate by group: 16 tokens: 0.0%, 100 tokens: 0.0%, 1,000 tokens: 8.2%, 3,000 tokens: 8.5%, 10,000 tokens: 15.0% (spread 15.0%)",
+      "detail": "chi-square=80.47, p=1.38e-16; early-stop rate by group: 16 tokens: 0.0%, 100 tokens: 0.0%, 1,000 tokens: 7.5%, 3,000 tokens: 8.3%, 10,000 tokens: 14.8% (spread 14.8%)",
       "values": {
-        "chi2": 54.349612117119534,
-        "p": 4.446237090500661e-11,
+        "chi2": 80.47341547525465,
+        "p": 1.3826232139605225e-16,
         "rate_by_group": {
           "16 tokens": 0.0,
           "100 tokens": 0.0,
-          "1,000 tokens": 0.0821256038647343,
-          "3,000 tokens": 0.08450704225352113,
-          "10,000 tokens": 0.1497584541062802
+          "1,000 tokens": 0.07516339869281045,
+          "3,000 tokens": 0.08280254777070063,
+          "10,000 tokens": 0.14838709677419354
         },
-        "spread": 0.1497584541062802
+        "spread": 0.14838709677419354
       }
     },
     {
       "name": "valid_observations_per_group",
       "flagged": true,
-      "detail": "groups below runs_per_group=400: 16 tokens: 196, 100 tokens: 197, 1,000 tokens: 207, 3,000 tokens: 213, 10,000 tokens: 207",
+      "detail": "groups below runs_per_group=400: 16 tokens: 299, 100 tokens: 283, 1,000 tokens: 306, 3,000 tokens: 314, 10,000 tokens: 310",
       "values": {
         "runs_per_group": 400,
         "valid_by_group": {
-          "16 tokens": 196,
-          "100 tokens": 197,
-          "1,000 tokens": 207,
-          "3,000 tokens": 213,
-          "10,000 tokens": 207
+          "16 tokens": 299,
+          "100 tokens": 283,
+          "1,000 tokens": 306,
+          "3,000 tokens": 314,
+          "10,000 tokens": 310
         }
       }
     },
@@ -107,5 +107,5 @@
       }
     }
   ],
-  "n_flagged": 2
+  "n_flagged": 3
 }

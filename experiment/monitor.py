@@ -107,31 +107,42 @@ async def monitor(rt: Runtime, phases: list[str] | None = None, once: bool = Fal
             sources = {k: "retrieve" for k in objs}
 
         status_counts: dict[str, int] = {}
+        updates: list[tuple[str, dict[str, Any]]] = []
+        by_obs: dict[str, tuple[dict[str, Any], dict[str, Any]]] = {}
         for job in active:
             b = objs.get(job["batch_id"])
             if b is None:
                 continue
             status_counts[b.get("status") or "?"] = status_counts.get(b.get("status") or "?", 0) + 1
             rt.poll_events.append(poll_event(job, b, poll_iso, cycle, sources.get(job["batch_id"], "?")))
-            transitioned = rt.store.apply_batch_object(job["observation_id"], b, poll_iso)
-            if transitioned:
-                transitions += 1
-                final = b
+            updates.append((job["observation_id"], b))
+            by_obs[job["observation_id"]] = (job, b)
+        newly_terminal = rt.store.apply_batch_objects(updates, poll_iso)  # one transaction per cycle
+        transitions += len(newly_terminal)
+
+        sem = asyncio.Semaphore(max(1, conc))
+
+        async def finalize(obs_id: str) -> None:
+            job, b = by_obs[obs_id]
+            final = b
+            async with sem:
                 if sources.get(job["batch_id"]) == "list":
                     res = await rt.api.retrieve_batch(job["batch_id"])
                     if res.ok:
                         final = res.data
-                        rt.store.apply_batch_object(job["observation_id"], final, iso_now())
-                rt.batch_objects.append({"kind": "batch_final", "observation_id": job["observation_id"], "seen_at": iso_now(),
-                                         "batch": final})
-                log.info("terminal: %s %s status=%s created=%s in_progress=%s completed=%s", job["observation_id"], job["batch_id"],
+                        rt.store.apply_batch_object(obs_id, final, iso_now())
+                rt.batch_objects.append({"kind": "batch_final", "observation_id": obs_id, "seen_at": iso_now(), "batch": final})
+                log.info("terminal: %s %s status=%s created=%s in_progress=%s completed=%s", obs_id, job["batch_id"],
                          final.get("status"), final.get("created_at"), final.get("in_progress_at"), final.get("completed_at"))
                 if collect_inline:
-                    refreshed = rt.store.get_job(job["observation_id"]) or job
+                    refreshed = rt.store.get_job(obs_id) or job
                     try:
                         await collect_job(rt, refreshed)
                     except Exception as e:  # noqa: BLE001
-                        log.exception("collect failed for %s: %s", job["observation_id"], e)
+                        log.exception("collect failed for %s: %s", obs_id, e)
+
+        if newly_terminal:
+            await asyncio.gather(*(finalize(o) for o in newly_terminal))
         rt.store.set_meta("monitor_cycles", cycle)
         rt.poll_events.checkpoint()
         elapsed = epoch_now() - cycle_t0

@@ -11,6 +11,7 @@ from .timeutil import iso_now, epoch_now
 
 SCHEMA = """
 PRAGMA journal_mode=WAL;
+PRAGMA synchronous=NORMAL;
 CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY, value TEXT);
 CREATE TABLE IF NOT EXISTS files (
   file_id TEXT PRIMARY KEY,
@@ -278,6 +279,17 @@ class Store:
         with self.conn:
             self.conn.execute("BEGIN")
             transitioned = self._apply_batch_fields(observation_id, b, poll_iso)
+            self.conn.execute("COMMIT")
+        return transitioned
+
+    def apply_batch_objects(self, updates: list[tuple[str, dict[str, Any]]], poll_iso: str) -> list[str]:
+        """Apply a whole poll cycle in ONE transaction; returns the observation_ids that became terminal."""
+        transitioned: list[str] = []
+        with self.conn:
+            self.conn.execute("BEGIN")
+            for observation_id, b in updates:
+                if self._apply_batch_fields(observation_id, b, poll_iso):
+                    transitioned.append(observation_id)
             self.conn.execute("COMMIT")
         return transitioned
 

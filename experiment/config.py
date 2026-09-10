@@ -62,6 +62,7 @@ class ExperimentConfig:
     poll_interval_seconds: float = 7.0  # target cycle period, within the 5-10 s brief
     poll_concurrency: int = 20
     poll_mode: str = "list"  # "list" (paged /v1/batches, cheap) or "retrieve" (one GET per job)
+    poll_events_gzip: bool = True  # append poll events to batch_poll_events.jsonl.gz (2,000 jobs x 7 s ~ 450 MB/h raw)
     estimated_input_tokens_per_request: int = 60  # measured 45 for the prompt; rounded up
     api_min_max_output_tokens: int = API_MIN_MAX_OUTPUT_TOKENS
     file_mode: str = "shared"  # "shared": one uploaded file per level reused by all its jobs; "individual": one file per job

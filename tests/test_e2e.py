@@ -9,6 +9,7 @@ import pytest
 
 from experiment.collect import collect_all
 from experiment.config import ExperimentConfig
+from experiment.events import read_jsonl
 from experiment.launch import launch
 from experiment.monitor import monitor
 from experiment.observations import build_observations, write_observations
@@ -63,9 +64,10 @@ async def test_full_pipeline(workdir, fake_api):
         back = pd.read_parquet(pq_path)
         assert len(back) == len(df)
         # raw artifacts exist and are append-only JSONL
-        for name in ("batch_creation_events.jsonl", "batch_poll_events.jsonl", "batch_objects.jsonl", "responses.jsonl", "errors.jsonl"):
+        for name in ("batch_creation_events.jsonl", "batch_objects.jsonl", "responses.jsonl", "errors.jsonl"):
             assert os.path.exists(cfg.raw_path(name))
-        polls = [json.loads(l) for l in open(cfg.raw_path("batch_poll_events.jsonl"))]
+        assert os.path.exists(cfg.raw_path("batch_poll_events.jsonl.gz"))  # gzip-appended by default
+        polls = list(read_jsonl(cfg.raw_path("batch_poll_events.jsonl")))
         assert {"batch_id", "poll_timestamp_utc", "status", "created_at", "in_progress_at", "completed_at", "failed_at",
                 "expired_at", "cancelled_at", "request_counts", "output_file_id", "error_file_id"} <= set(polls[0])
         finals = [json.loads(l) for l in open(cfg.raw_path("batch_objects.jsonl"))]

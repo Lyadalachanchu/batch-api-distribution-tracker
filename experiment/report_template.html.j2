@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Batch API turnaround — {{ r.experiment.experiment_id }}</title>
+<style>
+  :root { color-scheme: light; --ink: #0b0b0b; --ink2: #52514e; --muted: #898781; --grid: #e1e0d9; --axis: #c3c2b7;
+          --surface: #fcfcfb; --page: #f9f9f7; --warn-bg: #fff4e5; --warn-border: #fab219; --crit: #d03b3b; --good: #006300; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--page); color: var(--ink); font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+         font-size: 14px; line-height: 1.5; }
+  main { max-width: 1100px; margin: 0 auto; padding: 24px 16px 48px; }
+  h1 { font-size: 26px; line-height: 1.2; margin: 0 0 6px; }
+  h2 { font-size: 20px; margin: 40px 0 10px; padding-bottom: 4px; border-bottom: 1px solid var(--grid); }
+  h3 { font-size: 16px; margin: 22px 0 8px; }
+  p, li { max-width: 80ch; }
+  .sub { color: var(--ink2); margin: 0 0 16px; }
+  nav ul { list-style: none; padding: 0; margin: 0 0 8px; display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 13px; }
+  nav a { color: var(--ink2); text-decoration: none; border-bottom: 1px solid var(--axis); }
+  .banner { background: var(--warn-bg); border: 2px solid var(--warn-border); border-radius: 6px; padding: 12px 16px; margin: 16px 0; font-weight: 600; }
+  .banner p { margin: 4px 0; max-width: none; }
+  .callout { background: var(--surface); border-left: 4px solid var(--axis); padding: 10px 14px; margin: 12px 0; border-radius: 0 6px 6px 0; }
+  .card { background: var(--surface); border: 1px solid var(--grid); border-radius: 8px; padding: 14px 16px; margin: 12px 0; }
+  .table-wrap { overflow-x: auto; margin: 10px 0 18px; }
+  table { border-collapse: collapse; width: 100%; font-size: 13px; background: var(--surface); }
+  th, td { border: 1px solid var(--grid); padding: 5px 8px; text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  th { background: #f3f2ee; color: var(--ink2); font-weight: 600; text-align: right; }
+  th:first-child, td:first-child { text-align: left; }
+  td.text { text-align: left; white-space: normal; min-width: 22ch; }
+  th.text { text-align: left; }
+  dl.meta { display: grid; grid-template-columns: max-content 1fr; gap: 4px 16px; margin: 0; }
+  dl.meta dt { color: var(--ink2); }
+  dl.meta dd { margin: 0; overflow-wrap: anywhere; }
+  pre.prompt { white-space: pre-wrap; background: #f3f2ee; border: 1px solid var(--grid); border-radius: 6px; padding: 10px 12px; font-size: 13px; margin: 6px 0 0; }
+  .flag { display: inline-block; padding: 1px 8px; border-radius: 10px; font-weight: 600; font-size: 12px; white-space: nowrap; }
+  .flag.bad { background: #fbe4e4; color: var(--crit); }
+  .flag.ok { background: #e3f3e3; color: var(--good); }
+  figure { margin: 22px 0; background: var(--surface); border: 1px solid var(--grid); border-radius: 8px; padding: 8px 8px 12px; }
+  figure .plot { width: 100%; min-height: 200px; }
+  figcaption { color: var(--ink2); font-size: 13px; padding: 4px 8px 0; max-width: none; }
+  footer { margin-top: 40px; color: var(--muted); font-size: 12px; border-top: 1px solid var(--grid); padding-top: 12px; }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12.5px; background: #f3f2ee; padding: 0 4px; border-radius: 3px; }
+  @media (max-width: 640px) { h1 { font-size: 22px; } dl.meta { grid-template-columns: 1fr; } dl.meta dt { margin-top: 6px; } }
+</style>
+<script id="plotly-js">{{ plotlyjs_placeholder }}</script>
+</head>
+<body>
+<main>
+
+{% macro flag(v) -%}
+  {% if v %}<span class="flag bad">&#9888; flagged</span>{% else %}<span class="flag ok">&#10003; ok</span>{% endif %}
+{%- endmacro %}
+
+{% macro count_table(ds) %}
+<div class="table-wrap"><table>
+  <thead><tr><th>Level</th><th>Submitted</th><th>Created</th><th>Creation failed</th><th>Completed</th><th>Failed</th><th>Expired</th><th>Cancelled</th><th>Other</th><th>Valid</th>{% if ds.n_replacement %}<th>Replacement rows</th>{% endif %}<th>Early stops</th><th>Early-stop rate</th><th>Cost (USD)</th></tr></thead>
+  <tbody>
+  {% for g in ds.groups %}
+  <tr><td>{{ g.label }}</td><td>{{ g.submitted|fmt }}</td><td>{{ g.created|fmt }}</td><td>{{ g.creation_failed|fmt }}</td><td>{{ g.completed|fmt }}</td><td>{{ g.failed|fmt }}</td><td>{{ g.expired|fmt }}</td><td>{{ g.cancelled|fmt }}</td><td>{{ g.other_status|fmt }}</td><td>{{ g.valid|fmt }}</td>{% if ds.n_replacement %}<td>{{ g.n_replacement|fmt }}</td>{% endif %}<td>{{ g.early_stops|fmt }}</td><td>{{ g.early_stop_rate|pct }}</td><td>{{ g.cost_usd|usd }}</td></tr>
+  {% endfor %}
+  </tbody>
+</table></div>
+{% endmacro %}
+
+{% macro turnaround_table(ds) %}
+<div class="table-wrap"><table>
+  <thead><tr><th>Level</th><th>n valid</th><th>Mean</th><th>SD</th><th>Min</th><th>p10</th><th>p25</th><th>Median</th><th>Median 95% CI</th><th>p75</th><th>p90</th><th>p95</th><th>p95 95% CI</th><th>p99</th><th>Max</th></tr></thead>
+  <tbody>
+  {% for g in ds.groups %}
+  <tr><td>{{ g.label }}</td><td>{{ g.turnaround_n|fmt }}</td><td>{{ g.turnaround_mean|fmt }}</td><td>{{ g.turnaround_sd|fmt }}</td><td>{{ g.turnaround_min|fmt(0) }}</td><td>{{ g.turnaround_p10|fmt(0) }}</td><td>{{ g.turnaround_p25|fmt(0) }}</td><td><strong>{{ g.turnaround_median|fmt(0) }}</strong></td><td>{{ g.turnaround_median_ci_low|ci(g.turnaround_median_ci_high) }}</td><td>{{ g.turnaround_p75|fmt(0) }}</td><td>{{ g.turnaround_p90|fmt(0) }}</td><td>{{ g.turnaround_p95|fmt(0) }}</td><td>{{ g.turnaround_p95_ci_low|ci(g.turnaround_p95_ci_high) }}</td><td>{{ g.turnaround_p99|fmt(0) }}</td><td>{{ g.turnaround_max|fmt(0) }}</td></tr>
+  {% endfor %}
+  </tbody>
+</table></div>
+{% endmacro %}
+
+{% macro phase_table(ds) %}
+<div class="table-wrap"><table>
+  <thead><tr><th>Level</th><th>Queue median</th><th>Queue 95% CI</th><th>Queue p95</th><th>Queue mean</th><th>Active median</th><th>Active 95% CI</th><th>Active p95</th><th>Active mean</th><th>Actual tokens mean</th><th>Actual tokens median</th><th>Actual/requested mean</th><th>Actual/requested median</th><th>Reasoning tokens mean</th></tr></thead>
+  <tbody>
+  {% for g in ds.groups %}
+  <tr><td>{{ g.label }}</td><td>{{ g.queue_median|fmt(0) }}</td><td>{{ g.queue_median_ci_low|ci(g.queue_median_ci_high) }}</td><td>{{ g.queue_p95|fmt(0) }}</td><td>{{ g.queue_mean|fmt }}</td><td>{{ g.active_median|fmt(0) }}</td><td>{{ g.active_median_ci_low|ci(g.active_median_ci_high) }}</td><td>{{ g.active_p95|fmt(0) }}</td><td>{{ g.active_mean|fmt }}</td><td>{{ g.actual_output_tokens_mean|fmt }}</td><td>{{ g.actual_output_tokens_median|fmt(0) }}</td><td>{{ g.ratio_actual_requested_mean|fmt(3) }}</td><td>{{ g.ratio_actual_requested_median|fmt(3) }}</td><td>{{ g.reasoning_tokens_mean|fmt }}</td></tr>
+  {% endfor %}
+  </tbody>
+</table></div>
+{% endmacro %}
+
+{% macro dataset_block(ds) %}
+<p class="sub">{{ ds.description }} Phases: <code>{{ ds.phases|join(', ') }}</code>; rows {{ ds.n_rows|fmt }}, valid {{ ds.n_valid|fmt }}.</p>
+<h3>Counts and outcomes</h3>
+{{ count_table(ds) }}
+<h3>Turnaround (seconds, valid jobs)</h3>
+{{ turnaround_table(ds) }}
+<h3>Queue time, active time and token usage (seconds / tokens, valid jobs)</h3>
+{{ phase_table(ds) }}
+{% endmacro %}
+
+{% macro model_table(m) %}
+{% if m.error %}
+  <p class="callout">Model not fitted: {{ m.error }}{% if m.formula %} (<code>{{ m.formula }}</code>){% endif %}</p>
+{% else %}
+  <p><code>{{ m.formula }}</code><br>n = {{ m.n|fmt }}, R² = {{ m.r_squared|fmt(3) }}, adjusted R² = {{ m.adj_r_squared|fmt(3) }}, {{ m.cov_type }} robust standard errors, {{ m.bootstrap_resamples|fmt }} bootstrap resamples{% if m.bootstrap_skipped %} ({{ m.bootstrap_skipped }} singular resamples skipped){% endif %}.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th class="text">Term</th><th>Estimate</th><th>Robust SE</th><th>95% CI (HC3)</th><th>95% CI (bootstrap)</th><th>p</th><th>exp(estimate)</th></tr></thead>
+    <tbody>
+    {% for c in m.coefficients %}
+    <tr><td class="text">{{ c.term }}</td><td>{{ c.estimate|fmt(4) }}</td><td>{{ c.robust_se|fmt(4) }}</td><td>{{ c.ci_low|ci(c.ci_high, 4) }}</td><td>{{ c.boot_ci_low|ci(c.boot_ci_high, 4) }}</td><td>{{ c.p_value|sci }}</td><td>{{ c.exp_estimate|fmt(3) }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+{% endif %}
+{% endmacro %}
+
+<header>
+  <h1>OpenAI Batch API turnaround by requested output tokens</h1>
+  <p class="sub">Experiment <code>{{ r.experiment.experiment_id }}</code> · generated {{ generated_at }}</p>
+  <nav><ul>
+    <li><a href="#metadata">Metadata</a></li><li><a href="#deviation">Design deviation</a></li><li><a href="#launch">Launch</a></li>
+    <li><a href="#bias">Bias checks</a></li><li><a href="#stats">Per-group statistics</a></li><li><a href="#figures">Figures</a></li>
+    <li><a href="#models">Models</a></li><li><a href="#cost">Cost</a></li><li><a href="#pilot">Pilot</a></li><li><a href="#limitations">Limitations</a></li>
+  </ul></nav>
+</header>
+
+{% if r.warnings %}
+<div class="banner" role="alert">
+  {% for w in r.warnings %}<p>&#9888; {{ w }}</p>{% endfor %}
+</div>
+{% endif %}
+
+<section id="metadata">
+  <h2>Experiment metadata</h2>
+  <div class="card">
+  <dl class="meta">
+    <dt>Experiment id</dt><dd><code>{{ r.experiment.experiment_id }}</code></dd>
+    <dt>Model</dt><dd><code>{{ r.experiment.model }}</code></dd>
+    <dt>Endpoint</dt><dd><code>{{ r.experiment.endpoint }}</code> via the Batch API, completion window {{ r.experiment.completion_window }}</dd>
+    <dt>SDK version</dt><dd>openai {{ r.experiment.sdk_version or 'unknown' }}</dd>
+    <dt>Output-token levels</dt><dd>{{ r.experiment.output_token_levels|join(', ') }} (max_output_tokens per request)</dd>
+    <dt>Runs per group</dt><dd>{{ r.experiment.runs_per_group|fmt }} (one request per batch job)</dd>
+    <dt>Seed</dt><dd>{{ r.experiment.seed }} (launch-order shuffle); bootstrap seed {{ r.experiment.bootstrap_seed }}, {{ r.experiment.bootstrap_resamples|fmt }} resamples</dd>
+    <dt>Reasoning effort</dt><dd>{{ r.experiment.reasoning_effort or 'model default (request carries no reasoning field)' }}</dd>
+    <dt>Input file mode</dt><dd>{{ r.experiment.file_mode }}</dd>
+    <dt>Config created</dt><dd>{{ r.experiment.config_created_at or '–' }}</dd>
+    <dt>Prompt (verbatim)</dt><dd><pre class="prompt">{{ r.experiment.prompt }}</pre></dd>
+    {% if r.experiment.notes %}
+    <dt>Deviation notes</dt><dd><ul style="margin:0;padding-left:18px">{% for n in r.experiment.notes %}<li>{{ n }}</li>{% endfor %}</ul></dd>
+    {% endif %}
+  </dl>
+  </div>
+</section>
+
+<section id="deviation">
+  <h2>Design deviation</h2>
+  <div class="callout">
+    <p><strong>Originally requested levels:</strong> {{ r.experiment.original_requested_levels|join(', ') }}<br>
+       <strong>Levels actually run:</strong> {{ r.experiment.output_token_levels|join(', ') }}</p>
+    <p>The API rejects <code>max_output_tokens</code> below {{ r.experiment.api_min_max_output_tokens }} for this model (HTTP 400, <code>integer_below_min_value</code>),
+      so levels {{ r.experiment.levels_dropped|join(' and ') if r.experiment.levels_dropped else '(none)' }} could not be measured;
+      {% if r.experiment.levels_added %}levels {{ r.experiment.levels_added|join(' and ') }} were added instead so that five levels still span the feasible range.{% else %}no replacement levels were added.{% endif %}
+      The pilot submitted the infeasible levels on purpose to document the floor (see the pilot table).</p>
+  </div>
+</section>
+
+<section id="launch">
+  <h2>Launch summary</h2>
+  <div class="card">
+  <dl class="meta">
+    <dt>Launch started (local)</dt><dd>{{ r.launch.launch_started_at or '–' }}</dd>
+    <dt>Launch finished (local)</dt><dd>{{ r.launch.launch_finished_at or '–' }}</dd>
+    <dt>Launch window</dt><dd>{{ r.launch.window_seconds|duration }}</dd>
+    <dt>Jobs submitted / created</dt><dd>{{ r.launch.n_submitted|fmt }} / {{ r.launch.n_created|fmt }}</dd>
+    {% if r.launch.wave %}
+    <dt>Wave statistics</dt><dd>wave <code>{{ r.launch.wave.wave }}</code>: planned {{ r.launch.wave.planned|fmt }}, created {{ r.launch.wave.created|fmt }}, errors {{ r.launch.wave.errors|fmt }}, unknown {{ r.launch.wave.unknown|fmt }}, skipped {{ r.launch.wave.skipped|fmt }}, HTTP 429s {{ r.launch.wave.rate_limit_429s|fmt }}, duration {{ r.launch.wave.duration_seconds|duration }}{% if r.launch.wave.stopped_early %}; <strong>stopped early: {{ r.launch.wave.stop_reason }}</strong>{% endif %}</dd>
+    {% endif %}
+    <dt>Server created_at span</dt><dd>{{ r.launch.created_at_span_seconds|duration }} ({{ r.launch.created_at_min_iso or '–' }} → {{ r.launch.created_at_max_iso or '–' }})</dd>
+    <dt>Offset reference</dt><dd>{{ r.launch.reference_source or 'none available' }}</dd>
+    <dt>Max gap between group medians</dt><dd>{{ r.launch.max_median_gap_seconds|fmt }} s</dd>
+    <dt>Pilot gate</dt><dd>{{ r.launch.pilot_status or 'not recorded' }}</dd>
+  </dl>
+  </div>
+  <h3>Per-group created_at median (seconds after launch start)</h3>
+  <div class="table-wrap"><table>
+    <thead><tr>{% for k in r.launch.created_at_offset_median_by_group %}<th>{{ k }}</th>{% endfor %}</tr></thead>
+    <tbody><tr>{% for k, v in r.launch.created_at_offset_median_by_group.items() %}<td>{{ v|fmt }}</td>{% endfor %}</tr></tbody>
+  </table></div>
+</section>
+
+<section id="bias">
+  <h2>Bias checks</h2>
+  <p class="sub">{{ n_flagged }} of {{ r.bias_flags|length }} checks flagged. Tests use α = 0.01; "not testable" means the sample was too small or degenerate for the test.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th class="text">Check</th><th>Result</th><th class="text">Detail</th></tr></thead>
+    <tbody>
+    {% for c in r.bias_flags %}
+    <tr><td class="text"><code>{{ c.name }}</code></td><td>{{ flag(c.flagged) }}</td><td class="text">{{ c.detail }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+</section>
+
+<section id="stats">
+  <h2>Per-group statistics — {{ r.datasets.main.title }}</h2>
+  {{ dataset_block(r.datasets.main) }}
+  {% if r.datasets.with_replacements %}
+  <h2>Per-group statistics — {{ r.datasets.with_replacements.title }}</h2>
+  <p class="callout">{{ r.datasets.replacement.n_rows|fmt }} replacement job(s) exist ({{ r.datasets.replacement.n_valid|fmt }} valid). They are analysed here together with the valid production rows as a separate dataset; the main tables above remain the intent-to-measure result.</p>
+  {{ dataset_block(r.datasets.with_replacements) }}
+  {% endif %}
+</section>
+
+<section id="figures">
+  <h2>Figures</h2>
+  <p class="sub">All figures use the main dataset. Requested-token levels share one colour ramp (light = fewest tokens, dark = most) and one marker symbol per level throughout; hover any mark for its values.</p>
+  {% for name in figure_order %}
+  <figure id="fig-{{ name }}">
+    <div class="plot">{{ figure_html[name]|safe }}</div>
+    <figcaption><strong>Figure {{ loop.index }}.</strong> {{ captions[name] }}</figcaption>
+  </figure>
+  {% endfor %}
+</section>
+
+<section id="models">
+  <h2>Exploratory model fit</h2>
+  <p class="callout"><strong>Exploratory only.</strong> {{ r.model_fit.note }} The response is log(turnaround seconds), so exp(estimate) is a multiplicative effect on turnaround. Offsets use {{ r.model_fit.created_at_offset_source or 'server_created_at_offset_seconds' }}.</p>
+  {% if r.model_fit.error %}<p class="callout">{{ r.model_fit.error }}</p>{% endif %}
+  <h3>Model A — actual output tokens (continuous)</h3>
+  {{ model_table(r.model_fit.actual_tokens) }}
+  <h3>Model B — requested output tokens as a categorical factor</h3>
+  {{ model_table(r.model_fit.requested_factor) }}
+</section>
+
+<section id="cost">
+  <h2>Cost statement</h2>
+  <p class="sub">{{ r.cost.note }}</p>
+  <div class="card">
+  <dl class="meta">
+    <dt>Production spend (prod + replacement)</dt><dd><strong>{{ r.cost.production_usd|usd }}</strong></dd>
+    <dt>Pilot spend</dt><dd>{{ r.cost.pilot_usd|usd }}</dd>
+    <dt>Total spend</dt><dd>{{ r.cost.total_usd|usd }} for {{ r.cost.total_tokens|fmt }} total tokens</dd>
+    {% if r.cost.projected_max %}
+    <dt>Projected maximum (prepare)</dt><dd>{{ r.cost.projected_max.total_cost_usd|usd }} ({{ r.cost.projected_max.total_with_margin_usd|usd }} with {{ r.cost.projected_max.safety_margin|pct(0) }} margin; ceiling {{ r.cost.projected_max.ceiling_usd|usd(2) }}); production spend is {{ r.cost.production_share_of_projected_max|pct }} of the projection</dd>
+    {% else %}
+    <dt>Projected maximum</dt><dd>prepare_summary.json not found</dd>
+    {% endif %}
+    <dt>Pricing (per 1M tokens)</dt><dd>input {{ r.cost.pricing.input_per_1m_usd|usd(2) }}, cached input {{ r.cost.pricing.cached_input_per_1m_usd|usd(2) }}, output {{ r.cost.pricing.output_per_1m_usd|usd(2) }} — source: {{ r.cost.pricing.source }}</dd>
+  </dl>
+  </div>
+  <h3>Usage by phase</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Phase</th><th>Jobs</th><th>Jobs with usage</th><th>Input tokens</th><th>Cached input</th><th>Output tokens</th><th>Reasoning tokens</th><th>Total tokens</th><th>Cost (USD)</th></tr></thead>
+    <tbody>
+    {% for p, u in r.cost.by_phase.items() %}
+    <tr><td>{{ p }}</td><td>{{ u.jobs|fmt }}</td><td>{{ u.jobs_with_usage|fmt }}</td><td>{{ u.input_tokens|fmt }}</td><td>{{ u.cached_input_tokens|fmt }}</td><td>{{ u.output_tokens|fmt }}</td><td>{{ u.reasoning_tokens|fmt }}</td><td>{{ u.total_tokens|fmt }}</td><td>{{ u.cost_usd|usd }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+  <h3>Usage by phase and level</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Phase</th><th>Level</th><th>Jobs</th><th>Jobs with usage</th><th>Input tokens</th><th>Output tokens</th><th>Reasoning tokens</th><th>Total tokens</th><th>Cost (USD)</th></tr></thead>
+    <tbody>
+    {% for u in r.cost.by_phase_group %}
+    <tr><td>{{ u.phase }}</td><td>{{ u.label }}</td><td>{{ u.jobs|fmt }}</td><td>{{ u.jobs_with_usage|fmt }}</td><td>{{ u.input_tokens|fmt }}</td><td>{{ u.output_tokens|fmt }}</td><td>{{ u.reasoning_tokens|fmt }}</td><td>{{ u.total_tokens|fmt }}</td><td>{{ u.cost_usd|usd }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+</section>
+
+<section id="pilot">
+  <h2>Pilot summary</h2>
+  {% if r.datasets.pilot %}
+  <p class="sub">{{ r.datasets.pilot.description }} Levels below the API floor are expected to fail.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Level</th><th>Submitted</th><th>Created</th><th>Completed</th><th>Failed</th><th>Valid</th><th>Median turnaround (s)</th><th>Queue median (s)</th><th>Actual tokens mean</th><th>Reasoning tokens mean</th><th>Cost (USD)</th></tr></thead>
+    <tbody>
+    {% for g in r.datasets.pilot.groups %}
+    <tr><td>{{ g.label }}</td><td>{{ g.submitted|fmt }}</td><td>{{ g.created|fmt }}</td><td>{{ g.completed|fmt }}</td><td>{{ g.failed|fmt }}</td><td>{{ g.valid|fmt }}</td><td>{{ g.turnaround_median|fmt(0) }}</td><td>{{ g.queue_median|fmt(0) }}</td><td>{{ g.actual_output_tokens_mean|fmt }}</td><td>{{ g.reasoning_tokens_mean|fmt }}</td><td>{{ g.cost_usd|usd }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+  {% else %}
+  <p class="sub">No pilot observations in the store.</p>
+  {% endif %}
+</section>
+
+<section id="limitations">
+  <h2>Limitations</h2>
+  <ul>
+    <li><strong>One request per batch.</strong> Every job carries a single request, so per-batch fixed overhead (validation, scheduling, file finalisation) dominates the turnaround and the per-token generation time is a small fraction of it. Results characterise "one small batch" latency, not throughput of large batches.</li>
+    <li><strong>Timestamp resolution.</strong> Server-side <code>created_at</code>, <code>in_progress_at</code> and <code>completed_at</code> are integer seconds, so every duration carries up to ±1 s of quantisation and queue/active splits of a few seconds are not meaningful.</li>
+    <li><strong>Single wave, single day.</strong> All {{ r.experiment.runs_per_group|fmt }} × {{ r.experiment.output_token_levels|length }} jobs were submitted within one short window on one day. The distributions reflect Batch API conditions during that window and are not a forecast of turnaround at other times, on other days, or under other account loads.</li>
+    <li><strong>Reasoning tokens count toward the limit.</strong> <code>max_output_tokens</code> bounds visible plus reasoning tokens for this model, so the visible text is shorter than the requested level and the actual/requested ratio can differ from 1 even without an early stop.</li>
+    <li><strong>Levels 1 and 10 are not measurable.</strong> The API floor of {{ r.experiment.api_min_max_output_tokens }} tokens makes the two smallest levels of the original brief infeasible; {{ r.experiment.output_token_levels|join(', ') }} were run instead. Nothing here says how sub-16-token requests would behave.</li>
+    <li><strong>Early stops.</strong> The prompt asks the model not to stop voluntarily, but it sometimes does. Early stops are reported per group and kept in the valid dataset (the job completed normally); the actual-token scatter and Model A show their effect.</li>
+    <li><strong>Server load is unobserved.</strong> Queue time depends on the provider's overall Batch backlog, which is not visible to the client. Differences between levels could be confounded by backlog fluctuations during the wave even though submission order was randomised.</li>
+    <li><strong>Denominators and validity.</strong> Creation failures, failed and expired batches count against their group in the main dataset. Replacement batches are analysed separately and are not a like-for-like substitute because they were created later, outside the randomised wave.</li>
+    <li><strong>Cost figures are estimates.</strong> They are computed from reported usage at the documented Batch rates ({{ r.cost.pricing.source }}); the invoice may differ (rounding, cached-input accounting, pricing changes).</li>
+    <li><strong>Exploratory models.</strong> The OLS fits describe association within this wave under strong assumptions (log-linear effects, independent jobs) and are not causal estimates.</li>
+    <li><strong>Polling and collection are local.</strong> Turnaround uses server timestamps only, so the 5–10 s poll cadence does not enter the measurement, but a job that expired or failed reports no turnaround at all.</li>
+  </ul>
+</section>
+
+<footer>
+  Generated {{ generated_at }} by <code>python -m experiment analyze</code> · experiment <code>{{ r.experiment.experiment_id }}</code> · plotly.js embedded; this page works offline.
+</footer>
+</main>
+</body>
+</html>

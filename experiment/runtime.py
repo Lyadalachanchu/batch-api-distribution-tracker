@@ -34,7 +34,7 @@ class Runtime:
             store=Store(cfg.db_path),
             api=api,
             creation_events=EventWriter(cfg.raw_path("batch_creation_events.jsonl")),
-            poll_events=EventWriter(cfg.raw_path("batch_poll_events.jsonl")),
+            poll_events=EventWriter(cfg.raw_path("batch_poll_events.jsonl" + (".gz" if cfg.poll_events_gzip else ""))),
             batch_objects=EventWriter(cfg.raw_path("batch_objects.jsonl")),
             responses=EventWriter(cfg.raw_path("responses.jsonl")),
             errors=EventWriter(cfg.raw_path("errors.jsonl")),

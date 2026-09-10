@@ -335,7 +335,10 @@ def _kruskal(frame: pd.DataFrame, levels: list[int], col: str) -> tuple[float | 
     if len(samples) < 2:
         return None, None, meds, "not testable (fewer than two groups with data)"
     try:
-        h, p = sps.kruskal(*samples)
+        with np.errstate(invalid="ignore", divide="ignore"):
+            h, p = sps.kruskal(*samples)
+        if not (math.isfinite(float(h)) and math.isfinite(float(p))):
+            return None, None, meds, "not testable (all values identical)"
         return float(h), float(p), meds, None
     except ValueError as e:
         return None, None, meds, f"not testable ({e})"

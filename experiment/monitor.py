@@ -133,6 +133,7 @@ async def monitor(rt: Runtime, phases: list[str] | None = None, once: bool = Fal
                     except Exception as e:  # noqa: BLE001
                         log.exception("collect failed for %s: %s", job["observation_id"], e)
         rt.store.set_meta("monitor_cycles", cycle)
+        rt.poll_events.checkpoint()
         elapsed = epoch_now() - cycle_t0
         summary = {"cycle": cycle, "active": len(active), "seen": len(objs), "status_counts": status_counts,
                    "cycle_seconds": round(elapsed, 2), "transitions_total": transitions}

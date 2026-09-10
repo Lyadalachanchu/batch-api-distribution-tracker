@@ -4,8 +4,10 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# OpenAI keys: "sk-..." (project keys look like sk-proj-...). Be generous: any sk- token >= 12 chars.
-_KEY_RE = re.compile(r"sk-[A-Za-z0-9_\-]{12,}")
+# OpenAI keys: "sk-..." (project keys look like sk-proj-...). Be generous: any sk- token >= 12 chars,
+# but only at a token boundary (a letter/digit before "sk-" is a substring such as "mask-min-opp-axis"
+# inside plotly.js, not a key).
+_KEY_RE = re.compile(r"(?<![A-Za-z0-9])sk-[A-Za-z0-9_\-]{12,}")
 _BEARER_RE = re.compile(r"(?i)(bearer\s+)[A-Za-z0-9_\-\.]{12,}")
 
 REDACTED = "sk-***REDACTED***"

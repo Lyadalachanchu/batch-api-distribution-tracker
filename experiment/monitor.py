@@ -45,30 +45,32 @@ async def _retrieve_many(rt: Runtime, batch_ids: list[str], concurrency: int) ->
     return out
 
 
-async def _list_active(rt: Runtime, active: list[dict[str, Any]], max_pages: int = 400) -> dict[str, dict[str, Any]]:
+async def _list_active(rt: Runtime, active: list[dict[str, Any]], concurrency: int = 20, max_pages: int = 400) -> dict[str, dict[str, Any]]:
+    """Fetch every active batch via paged /v1/batches.
+
+    The list endpoint returns batches newest-first and its `after` cursor is a batch id, so with the full
+    set of our batch ids (terminal ones included) we can compute every page boundary up front and fetch the
+    pages concurrently instead of walking the cursor chain sequentially. Any active batch not seen (e.g. the
+    project contains batches we do not know about, shifting boundaries) is retrieved individually by the caller."""
     assert rt.api is not None
     wanted = {j["batch_id"] for j in active}
-    oldest = min((j["created_at"] for j in active if j.get("created_at") is not None), default=None)
+    known = sorted((j["batch_id"] for j in rt.store.list_jobs() if j.get("batch_id")), reverse=True)
+    cursors: list[str | None] = [None] + [known[i] for i in range(99, len(known), 100)]
+    cursors = cursors[:max_pages]
+    sem = asyncio.Semaphore(max(1, concurrency))
     found: dict[str, dict[str, Any]] = {}
-    after: str | None = None
-    for _ in range(max_pages):
-        res = await rt.api.list_batches(after=after, limit=100)
+
+    async def page(after: str | None) -> None:
+        async with sem:
+            res = await rt.api.list_batches(after=after, limit=100)
         if not res.ok:
-            log.warning("list_batches failed: %s %s", res.http_status, res.error_message)
-            break
-        items = res.data["data"]
-        if not items:
-            break
-        for b in items:
+            log.warning("list_batches(after=%s) failed: %s %s", after, res.http_status, res.error_message)
+            return
+        for b in res.data["data"]:
             if b.get("id") in wanted:
                 found[b["id"]] = b
-        if len(found) >= len(wanted):
-            break
-        if oldest is not None and items[-1].get("created_at") is not None and items[-1]["created_at"] < oldest - 1:
-            break
-        if not res.data.get("has_more"):
-            break
-        after = items[-1]["id"]
+
+    await asyncio.gather(*(page(c) for c in cursors))
     return found
 
 
@@ -95,7 +97,7 @@ async def monitor(rt: Runtime, phases: list[str] | None = None, once: bool = Fal
         objs: dict[str, dict[str, Any]] = {}
         sources: dict[str, str] = {}
         if mode == "list":
-            objs = await _list_active(rt, active)
+            objs = await _list_active(rt, active, conc)
             sources = {k: "list" for k in objs}
             missing = [j["batch_id"] for j in active if j["batch_id"] not in objs]
             if missing:

@@ -60,7 +60,7 @@ class ExperimentConfig:
     max_creations_per_rolling_hour: int = 2000  # documented Batch creation limit
     launch_concurrency: int = 50
     poll_interval_seconds: float = 7.0  # target cycle period, within the 5-10 s brief
-    poll_concurrency: int = 20
+    poll_concurrency: int = 40
     poll_mode: str = "list"  # "list" (paged /v1/batches, cheap) or "retrieve" (one GET per job)
     poll_events_gzip: bool = True  # append poll events to batch_poll_events.jsonl.gz (2,000 jobs x 7 s ~ 450 MB/h raw)
     estimated_input_tokens_per_request: int = 60  # measured 45 for the prompt; rounded up

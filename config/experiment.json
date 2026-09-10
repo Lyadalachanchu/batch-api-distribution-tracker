@@ -40,7 +40,7 @@
     3000,
     10000
   ],
-  "poll_concurrency": 20,
+  "poll_concurrency": 40,
   "poll_events_gzip": true,
   "poll_interval_seconds": 7.0,
   "poll_mode": "list",

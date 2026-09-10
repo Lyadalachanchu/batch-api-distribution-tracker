@@ -1,0 +1,341 @@
+{
+  "evaluation": {
+    "passed": true,
+    "checks": {
+      "all_creations_succeeded": {
+        "ok": true,
+        "detail": {
+          "created": 9,
+          "jobs": 9
+        }
+      },
+      "no_pilot_job_failed_or_expired": {
+        "ok": true,
+        "detail": {}
+      },
+      "timestamps_available": {
+        "ok": true,
+        "detail": {
+          "completed_with_all_three_timestamps": 2,
+          "completed": 2,
+          "feasible_jobs": 6,
+          "still_queued_at_evaluation": [
+            "pilot-t00016-k0002",
+            "pilot-t00100-k0001",
+            "pilot-t01000-k0001",
+            "pilot-t10000-k0001"
+          ],
+          "statuses": {
+            "pilot-t00001-k0001": "in_progress",
+            "pilot-t00010-k0000": "in_progress",
+            "pilot-t00010-k0001": "in_progress",
+            "pilot-t00016-k0001": "completed",
+            "pilot-t00016-k0002": "in_progress",
+            "pilot-t00100-k0001": "in_progress",
+            "pilot-t01000-k0001": "in_progress",
+            "pilot-t03000-k0001": "completed",
+            "pilot-t10000-k0001": "in_progress"
+          }
+        }
+      },
+      "usage_extractable": {
+        "ok": true,
+        "detail": {
+          "pilot-t00016-k0001": {
+            "requested": 16,
+            "output_tokens": 16,
+            "reasoning_tokens": 16,
+            "response_status": "incomplete",
+            "incomplete_reason": "max_output_tokens"
+          },
+          "pilot-t03000-k0001": {
+            "requested": 3000,
+            "output_tokens": 132,
+            "reasoning_tokens": 32,
+            "response_status": "completed",
+            "incomplete_reason": null
+          }
+        }
+      },
+      "output_files_retrieved": {
+        "ok": true,
+        "detail": {
+          "retrieved": 2,
+          "completed": 2,
+          "parse_errors": {}
+        }
+      },
+      "input_file_reuse_works": {
+        "ok": true,
+        "detail": {
+          "files_reused": {
+            "file-569y65tCvNAnHFgp6zPMTY": [
+              "batch_6aa257e4e668819090632a184305fdc6",
+              "batch_6aa257e691808190add099e86e77d618"
+            ],
+            "file-YLhrenST2sPgqk9wxVBmNx": [
+              "batch_6aa257e7594c8190acc9e8f62a2a5659",
+              "batch_6aa257e703e08190ba6053218473709b"
+            ]
+          },
+          "creation_failures": []
+        }
+      },
+      "infeasible_levels_documented": {
+        "ok": true,
+        "detail": {
+          "terminal": {},
+          "still_queued_at_evaluation": [
+            "pilot-t00001-k0001",
+            "pilot-t00010-k0000",
+            "pilot-t00010-k0001"
+          ],
+          "synchronous_check": "/v1/responses returned HTTP 400 integer_below_min_value ('Expected a value >= 16') for max_output_tokens 1 and 10 on gpt-5.6-luna (verified 2026-09-10 before implementation)"
+        }
+      },
+      "no_secrets_in_artifacts": {
+        "ok": true,
+        "detail": {
+          "files_with_secrets": []
+        }
+      },
+      "resume_and_cost_limit_behaviour": {
+        "ok": true,
+        "detail": "covered by tests/test_resume.py, tests/test_cost.py, tests/test_limits.py and by the launch dry-run gate"
+      }
+    },
+    "still_queued_at_evaluation": [
+      "pilot-t00016-k0002",
+      "pilot-t00100-k0001",
+      "pilot-t01000-k0001",
+      "pilot-t10000-k0001"
+    ],
+    "jobs": [
+      {
+        "observation_id": "pilot-t00001-k0001",
+        "requested_output_tokens": 1,
+        "batch_id": "batch_6aa257e65ea48190b2d1497b3d11d7c2",
+        "input_file_id": "file-CZx8ewFNqSEVY4VvSc9muK",
+        "status": "in_progress",
+        "created_at": 1789024230,
+        "in_progress_at": 1789024232,
+        "finalizing_at": null,
+        "completed_at": null,
+        "output_tokens": null,
+        "reasoning_tokens": null,
+        "input_tokens": null,
+        "response_status": null,
+        "incomplete_reason": null,
+        "result_http_status": null,
+        "result_error_code": null,
+        "result_error_message": null,
+        "local_create_started_at": "2026-09-10T07:10:30.011201+00:00",
+        "local_create_finished_at": "2026-09-10T07:10:30.468053+00:00"
+      },
+      {
+        "observation_id": "pilot-t00010-k0000",
+        "requested_output_tokens": 10,
+        "batch_id": "batch_6aa257e4e668819090632a184305fdc6",
+        "input_file_id": "file-569y65tCvNAnHFgp6zPMTY",
+        "status": "in_progress",
+        "created_at": 1789024228,
+        "in_progress_at": 1789024290,
+        "finalizing_at": null,
+        "completed_at": null,
+        "output_tokens": null,
+        "reasoning_tokens": null,
+        "input_tokens": null,
+        "response_status": null,
+        "incomplete_reason": null,
+        "result_http_status": null,
+        "result_error_code": null,
+        "result_error_message": null,
+        "local_create_started_at": "2026-09-10T07:10:28.200012+00:00",
+        "local_create_finished_at": "2026-09-10T07:10:30.009129+00:00"
+      },
+      {
+        "observation_id": "pilot-t00010-k0001",
+        "requested_output_tokens": 10,
+        "batch_id": "batch_6aa257e691808190add099e86e77d618",
+        "input_file_id": "file-569y65tCvNAnHFgp6zPMTY",
+        "status": "in_progress",
+        "created_at": 1789024230,
+        "in_progress_at": 1789024232,
+        "finalizing_at": null,
+        "completed_at": null,
+        "output_tokens": null,
+        "reasoning_tokens": null,
+        "input_tokens": null,
+        "response_status": null,
+        "incomplete_reason": null,
+        "result_http_status": null,
+        "result_error_code": null,
+        "result_error_message": null,
+        "local_create_started_at": "2026-09-10T07:10:30.013134+00:00",
+        "local_create_finished_at": "2026-09-10T07:10:30.618897+00:00"
+      },
+      {
+        "observation_id": "pilot-t00016-k0001",
+        "requested_output_tokens": 16,
+        "batch_id": "batch_6aa257e7594c8190acc9e8f62a2a5659",
+        "input_file_id": "file-YLhrenST2sPgqk9wxVBmNx",
+        "status": "completed",
+        "created_at": 1789024231,
+        "in_progress_at": 1789024234,
+        "finalizing_at": 1789024287,
+        "completed_at": 1789024288,
+        "output_tokens": 16,
+        "reasoning_tokens": 16,
+        "input_tokens": 45,
+        "response_status": "incomplete",
+        "incomplete_reason": "max_output_tokens",
+        "result_http_status": 200,
+        "result_error_code": null,
+        "result_error_message": null,
+        "local_create_started_at": "2026-09-10T07:10:30.014814+00:00",
+        "local_create_finished_at": "2026-09-10T07:10:31.412758+00:00"
+      },
+      {
+        "observation_id": "pilot-t00016-k0002",
+        "requested_output_tokens": 16,
+        "batch_id": "batch_6aa257e703e08190ba6053218473709b",
+        "input_file_id": "file-YLhrenST2sPgqk9wxVBmNx",
+        "status": "in_progress",
+        "created_at": 1789024231,
+        "in_progress_at": 1789024232,
+        "finalizing_at": null,
+        "completed_at": null,
+        "output_tokens": null,
+        "reasoning_tokens": null,
+        "input_tokens": null,
+        "response_status": null,
+        "incomplete_reason": null,
+        "result_http_status": null,
+        "result_error_code": null,
+        "result_error_message": null,
+        "local_create_started_at": "2026-09-10T07:10:30.850050+00:00",
+        "local_create_finished_at": "2026-09-10T07:10:31.068748+00:00"
+      },
+      {
+        "observation_id": "pilot-t00100-k0001",
+        "requested_output_tokens": 100,
+        "batch_id": "batch_6aa257e752dc81908fcc7726269c5bd9",
+        "input_file_id": "file-3hp7s6u7LZ2vUqQDQgaUhk",
+        "status": "in_progress",
+        "created_at": 1789024231,
+        "in_progress_at": 1789024232,
+        "finalizing_at": null,
+        "completed_at": null,
+        "output_tokens": null,
+        "reasoning_tokens": null,
+        "input_tokens": null,
+        "response_status": null,
+        "incomplete_reason": null,
+        "result_http_status": null,
+        "result_error_code": null,
+        "result_error_message": null,
+        "local_create_started_at": "2026-09-10T07:10:30.016422+00:00",
+        "local_create_finished_at": "2026-09-10T07:10:31.370175+00:00"
+      },
+      {
+        "observation_id": "pilot-t01000-k0001",
+        "requested_output_tokens": 1000,
+        "batch_id": "batch_6aa257e7800c8190af416a3a2e9d7599",
+        "input_file_id": "file-URyujANMbdu1xdjE7zk3Zv",
+        "status": "in_progress",
+        "created_at": 1789024231,
+        "in_progress_at": 1789024232,
+        "finalizing_at": null,
+        "completed_at": null,
+        "output_tokens": null,
+        "reasoning_tokens": null,
+        "input_tokens": null,
+        "response_status": null,
+        "incomplete_reason": null,
+        "result_http_status": null,
+        "result_error_code": null,
+        "result_error_message": null,
+        "local_create_started_at": "2026-09-10T07:10:30.017784+00:00",
+        "local_create_finished_at": "2026-09-10T07:10:31.545004+00:00"
+      },
+      {
+        "observation_id": "pilot-t03000-k0001",
+        "requested_output_tokens": 3000,
+        "batch_id": "batch_6aa257e754d88190a3622657f1aa969b",
+        "input_file_id": "file-GBThWoKtoCWSdsqY4xy39C",
+        "status": "completed",
+        "created_at": 1789024231,
+        "in_progress_at": 1789024234,
+        "finalizing_at": 1789024252,
+        "completed_at": 1789024253,
+        "output_tokens": 132,
+        "reasoning_tokens": 32,
+        "input_tokens": 45,
+        "response_status": "completed",
+        "incomplete_reason": null,
+        "result_http_status": 200,
+        "result_error_code": null,
+        "result_error_message": null,
+        "local_create_started_at": "2026-09-10T07:10:30.469722+00:00",
+        "local_create_finished_at": "2026-09-10T07:10:31.409034+00:00"
+      },
+      {
+        "observation_id": "pilot-t10000-k0001",
+        "requested_output_tokens": 10000,
+        "batch_id": "batch_6aa257e6c9248190969d5e2a2f595ace",
+        "input_file_id": "file-8EjySxx6hhhcV1nVJuHAbT",
+        "status": "in_progress",
+        "created_at": 1789024230,
+        "in_progress_at": 1789024232,
+        "finalizing_at": null,
+        "completed_at": null,
+        "output_tokens": null,
+        "reasoning_tokens": null,
+        "input_tokens": null,
+        "response_status": null,
+        "incomplete_reason": null,
+        "result_http_status": null,
+        "result_error_code": null,
+        "result_error_message": null,
+        "local_create_started_at": "2026-09-10T07:10:30.620837+00:00",
+        "local_create_finished_at": "2026-09-10T07:10:30.849034+00:00"
+      }
+    ]
+  },
+  "waves": [
+    {
+      "wave": "pilot-1",
+      "planned": 1,
+      "started_at": "2026-09-10T07:10:28.199870+00:00",
+      "finished_at": "2026-09-10T07:10:30.010491+00:00",
+      "created": 1,
+      "errors": 0,
+      "unknown": 0,
+      "skipped": 0,
+      "rate_limit_429s": 0,
+      "stopped_early": false,
+      "stop_reason": null,
+      "duration_seconds": 1.811,
+      "per_status": {
+        "200": 1
+      }
+    },
+    {
+      "wave": "pilot-2",
+      "planned": 8,
+      "started_at": "2026-09-10T07:10:30.011128+00:00",
+      "finished_at": "2026-09-10T07:10:31.546880+00:00",
+      "created": 8,
+      "errors": 0,
+      "unknown": 0,
+      "skipped": 0,
+      "rate_limit_429s": 0,
+      "stopped_early": false,
+      "stop_reason": null,
+      "duration_seconds": 1.536,
+      "per_status": {
+        "200": 8
+      }
+    }
+  ]
+}

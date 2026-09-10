@@ -1,0 +1,163 @@
+{
+  "note": "Exploratory association only. The launch is a single randomised wave on one day; the fit describes that wave and is not a causal estimate nor a guarantee of future Batch API performance.",
+  "n": 1020,
+  "response": "log(turnaround_seconds)",
+  "bootstrap_resamples_requested": 1000,
+  "created_at_offset_source": "server_created_at_offset_seconds",
+  "actual_tokens": {
+    "formula": "log(turnaround_seconds) ~ log1p(actual_output_tokens) + randomized_launch_position + server_created_at_offset_seconds",
+    "cov_type": "HC3",
+    "n": 1020,
+    "k": 4,
+    "r_squared": 0.07846144931910692,
+    "adj_r_squared": 0.07574037092142716,
+    "bootstrap_resamples": 1000,
+    "bootstrap_skipped": 0,
+    "coefficients": [
+      {
+        "term": "Intercept",
+        "raw_term": "Intercept",
+        "estimate": 4.882794147861377,
+        "robust_se": 0.13645281713765062,
+        "ci_low": 4.615351540682552,
+        "ci_high": 5.150236755040202,
+        "p_value": 1.9762637325733977e-280,
+        "boot_ci_low": 4.638108181070878,
+        "boot_ci_high": 5.152749106045622,
+        "exp_estimate": 131.99897374029027
+      },
+      {
+        "term": "log1p_actual_output_tokens",
+        "raw_term": "log1p_actual_output_tokens",
+        "estimate": 0.07769652643410754,
+        "robust_se": 0.010968179570774065,
+        "ci_low": 0.05619928949942239,
+        "ci_high": 0.0991937633687927,
+        "p_value": 1.402417319322736e-12,
+        "boot_ci_low": 0.05595022731041595,
+        "boot_ci_high": 0.09904615329721618,
+        "exp_estimate": 1.0807946163003008
+      },
+      {
+        "term": "randomized_launch_position",
+        "raw_term": "randomized_launch_position",
+        "estimate": -0.000561938989636886,
+        "robust_se": 0.0004371091958314653,
+        "ci_low": -0.0014186572707778236,
+        "ci_high": 0.0002947792915040515,
+        "p_value": 0.19858956083184676,
+        "boot_ci_low": -0.001352293988457726,
+        "boot_ci_high": 0.0003303512283819788,
+        "exp_estimate": 0.9994382188685069
+      },
+      {
+        "term": "server_created_at_offset_seconds",
+        "raw_term": "server_created_at_offset_seconds",
+        "estimate": 0.06326508577788253,
+        "robust_se": 0.08125917764464054,
+        "ci_low": -0.09599997581895522,
+        "ci_high": 0.2225301473747203,
+        "p_value": 0.4362393815339952,
+        "boot_ci_low": -0.09868581571404679,
+        "boot_ci_high": 0.21127229493921984,
+        "exp_estimate": 1.0653092001227236
+      }
+    ]
+  },
+  "requested_factor": {
+    "formula": "log(turnaround_seconds) ~ C(requested_output_tokens) + randomized_launch_position + server_created_at_offset_seconds",
+    "cov_type": "HC3",
+    "n": 1020,
+    "k": 7,
+    "r_squared": 0.08321574732297221,
+    "adj_r_squared": 0.07778563328934707,
+    "bootstrap_resamples": 1000,
+    "bootstrap_skipped": 0,
+    "coefficients": [
+      {
+        "term": "Intercept",
+        "raw_term": "Intercept",
+        "estimate": 5.110451393436955,
+        "robust_se": 0.1266251766534497,
+        "ci_low": 4.862270607660172,
+        "ci_high": 5.358632179213739,
+        "p_value": 0.0,
+        "boot_ci_low": 4.873680730379628,
+        "boot_ci_high": 5.350055533402764,
+        "exp_estimate": 165.74515426532489
+      },
+      {
+        "term": "requested = 100 tokens",
+        "raw_term": "C(requested_output_tokens)[T.100]",
+        "estimate": 0.19318110612507655,
+        "robust_se": 0.09042253746841701,
+        "ci_low": 0.015956189296255613,
+        "ci_high": 0.37040602295389746,
+        "p_value": 0.03264466518253858,
+        "boot_ci_low": 0.02838807205724731,
+        "boot_ci_high": 0.3661932187462467,
+        "exp_estimate": 1.2131024739141578
+      },
+      {
+        "term": "requested = 1000 tokens",
+        "raw_term": "C(requested_output_tokens)[T.1000]",
+        "estimate": 0.21827619913137336,
+        "robust_se": 0.08286576972984562,
+        "ci_low": 0.05586227490968654,
+        "ci_high": 0.3806901233530602,
+        "p_value": 0.0084362211950084,
+        "boot_ci_low": 0.052879711141118196,
+        "boot_ci_high": 0.37701291219260874,
+        "exp_estimate": 1.2439305927254096
+      },
+      {
+        "term": "requested = 3000 tokens",
+        "raw_term": "C(requested_output_tokens)[T.3000]",
+        "estimate": 0.25490148580038274,
+        "robust_se": 0.08196307154851505,
+        "ci_low": 0.09425681750301365,
+        "ci_high": 0.41554615409775186,
+        "p_value": 0.0018711568126580393,
+        "boot_ci_low": 0.09921175827660915,
+        "boot_ci_high": 0.41622164734908534,
+        "exp_estimate": 1.2903344983409628
+      },
+      {
+        "term": "requested = 10000 tokens",
+        "raw_term": "C(requested_output_tokens)[T.10000]",
+        "estimate": 0.5684220765616026,
+        "robust_se": 0.07749866635118886,
+        "ci_low": 0.41652748166338627,
+        "ci_high": 0.7203166714598189,
+        "p_value": 2.223769908609304e-13,
+        "boot_ci_low": 0.4244466580479012,
+        "boot_ci_high": 0.7240792706885667,
+        "exp_estimate": 1.7654790616036526
+      },
+      {
+        "term": "randomized_launch_position",
+        "raw_term": "randomized_launch_position",
+        "estimate": -0.0005690439129496286,
+        "robust_se": 0.00043552265205972483,
+        "ci_low": -0.0014226526254380585,
+        "ci_high": 0.0002845647995388012,
+        "p_value": 0.19135638661168697,
+        "boot_ci_low": -0.0014081291249685626,
+        "boot_ci_high": 0.00026455838459865286,
+        "exp_estimate": 0.9994311179618317
+      },
+      {
+        "term": "server_created_at_offset_seconds",
+        "raw_term": "server_created_at_offset_seconds",
+        "estimate": 0.06555221402362524,
+        "robust_se": 0.08096455000478754,
+        "ci_low": -0.09313538801025059,
+        "ci_high": 0.22423981605750107,
+        "p_value": 0.4181465735811244,
+        "boot_ci_low": -0.08977853937252704,
+        "boot_ci_high": 0.21697298772437096,
+        "exp_estimate": 1.0677484873027616
+      }
+    ]
+  }
+}

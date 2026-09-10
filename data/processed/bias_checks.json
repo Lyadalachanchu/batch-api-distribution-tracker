@@ -1,0 +1,111 @@
+{
+  "generated_at": "2026-09-10T15:38:40.494312+00:00",
+  "checks": [
+    {
+      "name": "submission_order_balance",
+      "flagged": false,
+      "detail": "Kruskal-Wallis H=2.32, p=0.678. Median launch position by group: 16 tokens: 948, 100 tokens: 966, 1,000 tokens: 1,006, 3,000 tokens: 1,051, 10,000 tokens: 987",
+      "values": {
+        "H": 2.3160161319328836,
+        "p": 0.6778546046668329,
+        "median_position_by_group": {
+          "16 tokens": 947.5,
+          "100 tokens": 966.5,
+          "1,000 tokens": 1005.5,
+          "3,000 tokens": 1051.0,
+          "10,000 tokens": 987.0
+        }
+      }
+    },
+    {
+      "name": "server_created_at_balance",
+      "flagged": false,
+      "detail": "Kruskal-Wallis H=2.75, p=0.6; max gap between group median created_at = 1.0 s. Median offset from launch start by group: 16 tokens: 5.9 s, 100 tokens: 5.9 s, 1,000 tokens: 6.9 s, 3,000 tokens: 6.9 s, 10,000 tokens: 5.9 s",
+      "values": {
+        "H": 2.7541406604664225,
+        "p": 0.5997744839639654,
+        "max_median_gap_seconds": 1.0,
+        "median_offset_by_group": {
+          "16 tokens": 5.91261100769043,
+          "100 tokens": 5.91261100769043,
+          "1,000 tokens": 6.91261100769043,
+          "3,000 tokens": 6.91261100769043,
+          "10,000 tokens": 5.91261100769043
+        }
+      }
+    },
+    {
+      "name": "launch_window",
+      "flagged": false,
+      "detail": "local launch window 23.0 s; server created_at span 11.0 s (flag threshold 600 s)",
+      "values": {
+        "window_seconds": 23.01197910308838,
+        "created_at_span_seconds": 11.0
+      }
+    },
+    {
+      "name": "failure_rate_by_group",
+      "flagged": false,
+      "detail": "chi-square=2.12, p=0.714; non-completed share by group: 16 tokens: 51.0%, 100 tokens: 50.7%, 1,000 tokens: 48.2%, 3,000 tokens: 46.8%, 10,000 tokens: 48.2% (spread 4.2%)",
+      "values": {
+        "chi2": 2.1208483393357342,
+        "p": 0.7135431977453304,
+        "rate_by_group": {
+          "16 tokens": 0.51,
+          "100 tokens": 0.5075,
+          "1,000 tokens": 0.4825,
+          "3,000 tokens": 0.4675,
+          "10,000 tokens": 0.4825
+        },
+        "spread": 0.04249999999999998
+      }
+    },
+    {
+      "name": "early_stop_rate_by_group",
+      "flagged": true,
+      "detail": "chi-square=54.35, p=4.45e-11; early-stop rate by group: 16 tokens: 0.0%, 100 tokens: 0.0%, 1,000 tokens: 8.2%, 3,000 tokens: 8.5%, 10,000 tokens: 15.0% (spread 15.0%)",
+      "values": {
+        "chi2": 54.349612117119534,
+        "p": 4.446237090500661e-11,
+        "rate_by_group": {
+          "16 tokens": 0.0,
+          "100 tokens": 0.0,
+          "1,000 tokens": 0.0821256038647343,
+          "3,000 tokens": 0.08450704225352113,
+          "10,000 tokens": 0.1497584541062802
+        },
+        "spread": 0.1497584541062802
+      }
+    },
+    {
+      "name": "valid_observations_per_group",
+      "flagged": true,
+      "detail": "groups below runs_per_group=400: 16 tokens: 196, 100 tokens: 197, 1,000 tokens: 207, 3,000 tokens: 213, 10,000 tokens: 207",
+      "values": {
+        "runs_per_group": 400,
+        "valid_by_group": {
+          "16 tokens": 196,
+          "100 tokens": 197,
+          "1,000 tokens": 207,
+          "3,000 tokens": 213,
+          "10,000 tokens": 207
+        }
+      }
+    },
+    {
+      "name": "actual_vs_requested_ratio",
+      "flagged": false,
+      "detail": "median actual/requested by group: 16 tokens: 1.000, 100 tokens: 1.000, 1,000 tokens: 1.000, 3,000 tokens: 1.000, 10,000 tokens: 1.000",
+      "values": {
+        "median_ratio_by_group": {
+          "16 tokens": 1.0,
+          "100 tokens": 1.0,
+          "1,000 tokens": 1.0,
+          "3,000 tokens": 1.0,
+          "10,000 tokens": 1.0
+        }
+      }
+    }
+  ],
+  "n_flagged": 2
+}
